@@ -9,7 +9,6 @@ const NFTSchema = new Schema({
   },
 });
 
-// Create a model from the schema
 const NFT = mongoose.model('NFT', NFTSchema);
 
 export default NFT;

@@ -30,14 +30,25 @@ async function checkBalance() {
   console.log(`Balance: ${balance / LAMPORTS_PER_SOL} SOL`);
 }
 
-async function saveNFT(creatorPublicKey, nftAddress){
+async function saveNFT(creatorPublicKey, nftAddress) {
+  const publicKeyString = creatorPublicKey.toString();  // Ensure this is a string
+  const nftId = nftAddress.toString();  // Ensure this is also a string
+
   try {
-    await mongooseConnect()
-    const nftDocument = new NFT({
-      nfts: new Map([[creatorPublicKey, nftAddress]])
-    });
-    await nftDocument.save()
-    console.log("NFT Saved SuccessFully")
+    await mongooseConnect();  // Ensure this connection function is properly awaited and set up
+
+    // Use the $set operator to update the map correctly
+    const updateData = {
+      $set: {
+        [`nfts.${publicKeyString}`]: nftId  // Properly use the string keys in the map
+      }
+    };
+
+    // Attempt to update an existing document or insert a new one if none exists
+    const result = await NFT.updateOne({}, updateData, { upsert: true });
+    console.log("Data Updated Successfully", result);
+
+    // If you were using a save method on a document it's not necessary here as updateOne handles it.
   } catch (error) {
     console.error('Failed to save NFT:', error);
   }
@@ -64,26 +75,30 @@ app.post('/api/prepare-mint',async (req,res)=>{
         isMutable: true
     });
 
-    console.log(nft)
+   
     if (nft.address !== undefined) {
-      console.log(
-        `Minted NFT: https://explorer.solana.com/address/${nft.address}?cluster=devnet`
-      );
-     const mongoRes= await saveNFT(nft.address,creatorsWithPublicKey)
-      res.status(200).json(mongoRes)
+    
+        const nftExpolorer= `https://explorer.solana.com/address/${nft.address}?cluster=devnet`
+        console.log("PublicKey:",creators[0].address)
+        await saveNFT(nft.address,creators[0].address);
+      res.status(200).json({
+        explorer:nftExpolorer,
+        nftAddress:nft.address
+      })
 }  }catch (error) {
     console.error('Failed to prepare mint:', error);
     res.status(500).json({ error: 'Failed to prepare mint', details: error.message });
   }
 
 })
-app.get('/', async (req, res) => {
+app.get('/getMint-history', async (req, res) => {
   try {
     await mongooseConnect();
       const nfts = await NFT.find({});
-      res.json(nfts);
+      console.log(nfts[0].nfts)
+      res.status(200).json({"nfts":nfts[0].nfts});
   } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({"Error in finding the nfts": error.message });
   }
 });
 app.listen(port, () => {
