@@ -17,8 +17,7 @@ app.use(express.json());
 app.use(express.json());
 app.use(bodyParser.json())
 app.use(cors({
-  origin: 'http://localhost:3000' // Allow only your frontend URL to access the backend
-}));
+  origin: 'https://doge-mint-client-2289.vercel.app/'}));
 
 const connection = new Connection("https://tiniest-fluent-water.solana-devnet.quiknode.pro/428929c7ca1602c0468b72fd69f26e28a5dc65f6/","finalized");
 const secretKey = Uint8Array.from(Object.values(JSON.parse(process.env.SOLANA_SECRET_KEY)))
