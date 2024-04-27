@@ -11,13 +11,15 @@ import { mongooseConnect } from "./lib/mongoConnect.js";
 const port = 8000;
 const app = express();
 
-
+const corsOptions = {
+  origin: 'https://doge-mint-client-2289.vercel.app', // or use ['https://example1.com', 'https://example2.com'] to allow multiple origins
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
 
 app.use(express.json());
 app.use(express.json());
 app.use(bodyParser.json())
-app.use(cors({
-  origin: 'https://doge-mint-client-2289.vercel.app/'}));
+app.use(cors(corsOptions));
 
 const connection = new Connection("https://tiniest-fluent-water.solana-devnet.quiknode.pro/428929c7ca1602c0468b72fd69f26e28a5dc65f6/","finalized");
 const secretKey = Uint8Array.from(Object.values(JSON.parse(process.env.SOLANA_SECRET_KEY)))
